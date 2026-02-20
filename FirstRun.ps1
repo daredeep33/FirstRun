@@ -14,7 +14,7 @@
     - Focuses on safe, reversible, and beneficial tweaks.
 .NOTES
     Author: daredeep33
-    Version: 2.0
+    Version: 2.1
     Disclaimer: Run this script at your own risk. Review the code to understand the changes it will make.
 #>
 
@@ -107,9 +107,20 @@ function Install-Applications {
     }
 }
 
-# Activation.
-function Show-ActivationInfo {
+# Activation (OPTIONAL - requires explicit user confirmation).
+function Invoke-SystemActivation {
     Write-Host "`n--- System Activation ---" -ForegroundColor Cyan
+    Write-Host "WARNING: This will download and execute a script from a third-party source." -ForegroundColor Yellow
+    Write-Host "This is an optional step. Use a genuine product key for best results." -ForegroundColor Yellow
+    
+    $activationConfirm = Read-Host "Do you want to attempt system activation? (y/n)"
+    
+    if ($activationConfirm -ne 'y') {
+        Write-Host "Activation skipped by user." -ForegroundColor Green
+        return
+    }
+    
+    Write-Host "Proceeding with activation..." -ForegroundColor Yellow
     irm https://get.activated.win | iex
 }
 
@@ -125,7 +136,7 @@ Write-Host "`nThis script will perform the following actions:"
 Write-Host "1. Ensure Winget Package Manager is installed."
 Write-Host "2. Apply safe system performance and privacy tweaks."
 Write-Host "3. Install a standard set of useful applications."
-Write-Host "4. Activating your system."
+Write-Host "4. (OPTIONAL) Activate your system."
 
 $confirmation = Read-Host "`nDo you want to continue? (y/n)"
 
@@ -138,10 +149,10 @@ if ($confirmation -ne 'y') {
 Ensure-Winget
 Apply-SystemTweaks
 Install-Applications
-Show-ActivationInfo
+Invoke-SystemActivation
 
 Write-Host "`n===============================================" -ForegroundColor Magenta
 Write-Host "      Script execution completed!"
 Write-Host "It is recommended to restart your computer."
-Write-Host "==============================================="
+Write-Host "===============================================" -ForegroundColor Magenta
 Read-Host "Press Enter to exit."

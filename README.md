@@ -12,17 +12,18 @@ This PowerShell script is designed to streamline and automate the setup of a fre
     -   Optimizes visual effects for better performance.
     -   Disables common telemetry and diagnostic services to enhance user privacy.
 -   ✅ **Batch Application Installation**: Installs a customizable list of essential applications in a single, silent operation using `winget`.
--   ✅ **Automated System Activation**: Includes a function to attempt system activation.
+-   ✅ **Optional System Activation**: Includes an opt-in function to attempt system activation with explicit user confirmation.
 
 ## ⚠️ Security and Activation Disclaimer
 
-This script includes a function that attempts to activate Windows by downloading and executing a script from an unofficial, third-party source (`get.activated.win`). Please be aware of the following:
+This script includes an **opt-in** activation feature that downloads and executes a script from a third-party source (`get.activated.win`). Please be aware of the following:
 
--   **Significant Security Risk**: Running scripts from untrusted sources using `irm | iex` is extremely dangerous and can expose your system to malware, ransomware, or other security vulnerabilities.
+-   **Requires Explicit Confirmation**: Activation will NOT run automatically. You must explicitly confirm when prompted.
+-   **Security Risk**: Running scripts from untrusted sources using `irm | iex` is potentially dangerous.
 -   **Software Licensing**: These methods are designed to bypass legitimate Microsoft software licensing.
 -   **System Stability**: Unofficial activation tools can modify critical system files, potentially leading to system instability or future update failures.
 
-**Use this feature entirely at your own risk. It is recommended to use a genuine product key for activation.**
+**Use the activation feature entirely at your own risk. It is recommended to use a genuine product key for activation.**
 
 ## Prerequisites
 
