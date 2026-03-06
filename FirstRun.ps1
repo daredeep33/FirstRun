@@ -36,8 +36,42 @@ $packages = @(
 function Start-Elevated {
     if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
         Write-Warning "This script requires Administrator privileges. Attempting to re-launch as Administrator..."
-        Start-Process pwsh -Verb RunAs -ArgumentList "-NoProfile -File `"$PSCommandPath`""
+        Start-Process "$PSHOME\powershell.exe" -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
         Exit
+    }
+}
+
+# Check for internet connectivity.
+function Test-InternetConnection {
+    Write-Host "`n--- Network Check ---" -ForegroundColor Cyan
+    Write-Host "[TASK] Checking for internet connectivity..."
+    try {
+        $response = Invoke-WebRequest -Uri "https://www.google.com" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+        if ($response.StatusCode -eq 200) {
+            Write-Host "[OK] Internet connection confirmed." -ForegroundColor Green
+        }
+        else {
+            throw "Status code: $($response.StatusCode)"
+        }
+    }
+    catch {
+        Write-Error "No internet connection detected. This script requires an active internet connection to download packages."
+        Write-Error "Error: $($_.Exception.Message)"
+        Exit
+    }
+}
+
+# Create a System Restore Point.
+function Create-RestorePoint {
+    Write-Host "`n--- System Protections ---" -ForegroundColor Cyan
+    Write-Host "[TASK] Creating System Restore Point..."
+    try {
+        Enable-ComputerRestore -Drive "C:\" -ErrorAction SilentlyContinue
+        Checkpoint-Computer -Description "Before FirstRun Setup" -RestorePointType "MODIFY_SETTINGS" -ErrorAction Stop
+        Write-Host "[OK] System Restore Point created successfully." -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "Failed to create System Restore Point. You may want to create one manually. Error: $($_.Exception.Message)"
     }
 }
 
@@ -94,12 +128,12 @@ function Install-Applications {
     Write-Host "The following applications will be installed:"
     $packages | ForEach-Object { Write-Host " - $_" }
     
-    # Format the package list for the winget command line
-    $packageArgs = $packages | ForEach-Object { "--id $_ --accept-package-agreements --accept-source-agreements" }
-    
     try {
-        Write-Host "Starting Winget bulk install... (This may take a while)"
-        winget install --exact $packageArgs
+        Write-Host "Starting Winget install... (This may take a while)"
+        foreach ($pkg in $packages) {
+            Write-Host "Installing $pkg..." -ForegroundColor Cyan
+            winget install --id $pkg --exact --accept-package-agreements --accept-source-agreements --silent
+        }
         Write-Host "[OK] All applications installed successfully." -ForegroundColor Green
     }
     catch {
@@ -133,10 +167,13 @@ Write-Host "     WINDOWS POST-INSTALLATION SCRIPT"
 Write-Host "==============================================="
 
 Write-Host "`nThis script will perform the following actions:"
-Write-Host "1. Ensure Winget Package Manager is installed."
-Write-Host "2. Apply safe system performance and privacy tweaks."
-Write-Host "3. Install a standard set of useful applications."
-Write-Host "4. (OPTIONAL) Activate your system."
+Write-Host "1. Check for internet connectivity."
+Write-Host "2. Create a System Restore Point."
+Write-Host "3. Ensure Winget Package Manager is installed."
+Write-Host "4. Apply safe system performance and privacy tweaks."
+Write-Host "5. Install a standard set of useful applications."
+Write-Host "6. Create a transcript log on your Desktop."
+Write-Host "7. (OPTIONAL) Activate your system."
 
 $confirmation = Read-Host "`nDo you want to continue? (y/n)"
 
@@ -146,13 +183,33 @@ if ($confirmation -ne 'y') {
 }
 
 # Execute the core functions
+Test-InternetConnection
+Create-RestorePoint
+
+# Start Transcript Logging
+$logFile = Join-Path $env:USERPROFILE "Desktop\FirstRun-Log.txt"
+Write-Host "`n--- Starting Transcript ---" -ForegroundColor Cyan
+Write-Host "Logging execution to: $logFile"
+Start-Transcript -Path $logFile -Force
+
 Ensure-Winget
 Apply-SystemTweaks
 Install-Applications
 Invoke-SystemActivation
 
+Stop-Transcript
+
 Write-Host "`n===============================================" -ForegroundColor Magenta
 Write-Host "      Script execution completed!"
-Write-Host "It is recommended to restart your computer."
+Write-Host "A log file has been saved to: $logFile"
 Write-Host "===============================================" -ForegroundColor Magenta
-Read-Host "Press Enter to exit."
+
+$restartConfirm = Read-Host "`nDo you want to restart your computer now to apply all tweaks? (y/n)"
+if ($restartConfirm -eq 'y') {
+    Write-Host "Restarting computer in 5 seconds..." -ForegroundColor Cyan
+    Start-Sleep -Seconds 5
+    Restart-Computer -Force
+}
+else {
+    Read-Host "Press Enter to exit."
+}

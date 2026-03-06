@@ -7,12 +7,15 @@ This PowerShell script is designed to streamline and automate the setup of a fre
 ## Key Features
 
 -   ✅ **Automatic Administrator Privileges**: The script automatically checks if it's running as an administrator and will re-launch itself with elevated privileges if needed.
+-   ✅ **Robust Environment Preparation**: Checks for internet connectivity and automatically creates a System Restore Point before making changes.
 -   ✅ **Automated Winget Installation**: It detects if the Windows Package Manager (`winget`) is installed. If not, it will download and install it before proceeding.
 -   ✅ **System Performance & Privacy Tweaks**:
     -   Optimizes visual effects for better performance.
     -   Disables common telemetry and diagnostic services to enhance user privacy.
 -   ✅ **Batch Application Installation**: Installs a customizable list of essential applications in a single, silent operation using `winget`.
--   ✅ **Optional System Activation**: Includes an opt-in function to attempt system activation with explicit user confirmation.
+-   ✅ **Automatic Transcript Logging**: Saves a complete log of everything the script did directly to your desktop.
+-   ✅ **Optional Auto-Restart & System Activation**: Gently prompts for system activation and an automatic reboot at the end.
+-   ✅ **Bonus Utilities**: Includes an optional `Debloat.ps1` script to clean out pre-installed junk apps.
 
 ## ⚠️ Security and Activation Disclaimer
 
@@ -33,6 +36,8 @@ This script includes an **opt-in** activation feature that downloads and execute
 
 ## Usage
 
+### FirstRun Setup
+
 This script is best run immediately after a clean Windows installation.
 
 1.  Open **PowerShell as an Administrator**.
@@ -44,6 +49,18 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.We
 > **Important:** Replace `daredeep33/YOUR_REPOSITORY` with your actual GitHub username and repository name.
 
 The script will display a summary of its actions and ask for your confirmation before proceeding.
+
+### Debloat Utility
+
+The `Debloat.ps1` script is a standalone tool designed to aggressively remove default Windows Universal Apps. 
+
+1. Open **PowerShell as an Administrator**.
+2. Navigate to the directory containing the cloned repository or downloaded script.
+3. Run the script:
+   ```powershell
+   .\Debloat.ps1
+   ```
+The script will display a warning and a confirmation prompt before uninstalling any bloatware.
 
 ## Customization
 
